@@ -147,8 +147,8 @@ const MyStake = () => {
 
           const delegatedAmount = delegation
             ? getDenominatedBalance<string>(delegation.userActiveStake, {
-                precisionAfterComma: 4,
-              })
+              precisionAfterComma: 4,
+            })
             : '0';
 
           const claimableRewards =
@@ -221,7 +221,7 @@ const MyStake = () => {
               amountValue={totalActiveStake}
               amountUnityMeasure={'EGLD'}
               title={'My Total Stake'}
-              actionButton={
+              actionButton={(
                 <MainButton
                   key="0"
                   variant="outlined"
@@ -241,7 +241,7 @@ const MyStake = () => {
                 >
                   Stake
                 </MainButton>
-              }
+              )}
               isLoading={isLoadingDelegations || isFetchingDelegations}
             />
           </Grid>
@@ -254,7 +254,7 @@ const MyStake = () => {
             <AmountWithTitleCard
               amountValue={allClaimableRewards}
               amountUnityMeasure={'EGLD'}
-              actionButton={
+              actionButton={(
                 <Button
                   variant="outlined"
                   size="medium"
@@ -273,7 +273,7 @@ const MyStake = () => {
                 >
                   {`from ${activeDelegationsRows?.length ?? '0'} Providers`}
                 </Button>
-              }
+              )}
               title={'My Claimable Rewards'}
               isLoading={isLoadingDelegations || isFetchingDelegations}
             />
@@ -288,7 +288,7 @@ const MyStake = () => {
               amountValue={totalUndelegatedFunds}
               amountUnityMeasure={'EGLD'}
               isLoading={isLoadingDelegations || isFetchingDelegations}
-              actionButton={
+              actionButton={(
                 <MainButton
                   key="0"
                   variant="outlined"
@@ -308,7 +308,7 @@ const MyStake = () => {
                 >
                   Details
                 </MainButton>
-              }
+              )}
               title={'My Undelegated Funds'}
             />
           </Grid>
