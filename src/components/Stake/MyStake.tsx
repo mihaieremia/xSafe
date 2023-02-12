@@ -48,13 +48,16 @@ const MyStake = () => {
   const [totalActiveStake, setTotalActiveStake] = useState(0);
   const [totalClaimableRewards, setTotalClaimableRewards] =
     useState<string>('0');
-  const [totalUndelegatedFunds, setTotalUndelegatedFunds] =
-    useState(0);
+  const [totalUndelegatedFunds, setTotalUndelegatedFunds] = useState(0);
 
   const activeDelegationsRows = useSelector(activeDelegationsRowsSelector);
 
   const fetchDelegations = () =>
-    axios.get(`/proxy?route=https://devnet-delegation-api.multiversx.com/accounts/${currentContract?.address}/delegations?forceRefresh=true`).then((r) => r.data);
+    axios
+      .get(
+        `https://delegation-api.multiversx.com/accounts/${currentContract?.address}/delegations?forceRefresh=true`,
+      )
+      .then((r) => r.data);
 
   const {
     data: fetchedDelegations,
@@ -77,7 +80,9 @@ const MyStake = () => {
       (totalSum: number, delegation: IDelegation) =>
         totalSum +
         parseFloat(
-          TokenPayment.egldFromBigInteger(delegation?.userActiveStake ?? 0).toRationalNumber(),
+          TokenPayment.egldFromBigInteger(
+            delegation?.userActiveStake ?? 0,
+          ).toRationalNumber(),
         ),
       0,
     );
@@ -86,7 +91,9 @@ const MyStake = () => {
       (totalSum: number, delegation: IDelegation) =>
         totalSum +
         parseFloat(
-          TokenPayment.egldFromBigInteger(delegation?.claimableRewards ?? 0).toRationalNumber(),
+          TokenPayment.egldFromBigInteger(
+            delegation?.claimableRewards ?? 0,
+          ).toRationalNumber(),
         ),
       0,
     );
@@ -108,7 +115,9 @@ const MyStake = () => {
     const totalUndelegations = contractUndelegations.reduce(
       (totalSum: number, undelegation: IUndelegatedFunds) => {
         const amount = parseFloat(
-          TokenPayment.egldFromBigInteger(undelegation?.amount ?? 0).toRationalNumber(),
+          TokenPayment.egldFromBigInteger(
+            undelegation?.amount ?? 0,
+          ).toRationalNumber(),
         );
         return totalSum + amount;
       },
@@ -138,8 +147,8 @@ const MyStake = () => {
 
           const delegatedAmount = delegation
             ? getDenominatedBalance<string>(delegation.userActiveStake, {
-              precisionAfterComma: 4,
-            })
+                precisionAfterComma: 4,
+              })
             : '0';
 
           const claimableRewards =
@@ -169,9 +178,13 @@ const MyStake = () => {
   }, [dispatch, fetchedDelegations, fetchedProviderIdentities]);
 
   const maxWidth804 = useMediaQuery('(max-width:804px)');
-  const widthBetween805and1038 = useMediaQuery('(min-width: 805px) and (max-width: 1038px)');
+  const widthBetween805and1038 = useMediaQuery(
+    '(min-width: 805px) and (max-width: 1038px)',
+  );
 
-  const currentMultisigTransactionId = useSelector(currentMultisigTransactionIdSelector);
+  const currentMultisigTransactionId = useSelector(
+    currentMultisigTransactionIdSelector,
+  );
   useTrackTransactionStatus({
     transactionId: currentMultisigTransactionId,
     onSuccess: () => {
@@ -179,7 +192,9 @@ const MyStake = () => {
     },
   });
 
-  const allClaimableRewards = Number(TokenPayment.egldFromAmount(totalClaimableRewards).toRationalNumber());
+  const allClaimableRewards = Number(
+    TokenPayment.egldFromAmount(totalClaimableRewards).toRationalNumber(),
+  );
 
   if (isErrorOnFetchDelegations) {
     return <ErrorOnFetchIndicator dataName="delegation" />;
@@ -196,12 +211,17 @@ const MyStake = () => {
         }}
       >
         <Grid container gap={'12px'} marginBottom={'12px'}>
-          <Grid item width={maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'}>
+          <Grid
+            item
+            width={
+              maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'
+            }
+          >
             <AmountWithTitleCard
               amountValue={totalActiveStake}
               amountUnityMeasure={'EGLD'}
               title={'My Total Stake'}
-              actionButton={(
+              actionButton={
                 <MainButton
                   key="0"
                   variant="outlined"
@@ -221,16 +241,20 @@ const MyStake = () => {
                 >
                   Stake
                 </MainButton>
-              )}
+              }
               isLoading={isLoadingDelegations || isFetchingDelegations}
-
             />
           </Grid>
-          <Grid item width={maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'}>
+          <Grid
+            item
+            width={
+              maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'
+            }
+          >
             <AmountWithTitleCard
               amountValue={allClaimableRewards}
               amountUnityMeasure={'EGLD'}
-              actionButton={(
+              actionButton={
                 <Button
                   variant="outlined"
                   size="medium"
@@ -249,18 +273,22 @@ const MyStake = () => {
                 >
                   {`from ${activeDelegationsRows?.length ?? '0'} Providers`}
                 </Button>
-              )}
+              }
               title={'My Claimable Rewards'}
               isLoading={isLoadingDelegations || isFetchingDelegations}
-
             />
           </Grid>
-          <Grid item width={maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'}>
+          <Grid
+            item
+            width={
+              maxWidth804 ? '100%' : widthBetween805and1038 ? '48.8%' : 'auto'
+            }
+          >
             <AmountWithTitleCard
               amountValue={totalUndelegatedFunds}
               amountUnityMeasure={'EGLD'}
               isLoading={isLoadingDelegations || isFetchingDelegations}
-              actionButton={(
+              actionButton={
                 <MainButton
                   key="0"
                   variant="outlined"
@@ -280,7 +308,7 @@ const MyStake = () => {
                 >
                   Details
                 </MainButton>
-              )}
+              }
               title={'My Undelegated Funds'}
             />
           </Grid>

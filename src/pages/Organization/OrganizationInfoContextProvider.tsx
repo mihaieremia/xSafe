@@ -49,7 +49,7 @@ function OrganizationInfoContextProvider({ children }: Props) {
   const [isBoardMember, setIsBoardMember] = useState(false);
   const [boardMembers, setBoardMembers] = useState<Address[]>([]);
   const [isInReadOnlyMode, setIsInReadOnlyMode] = useState<boolean>(true);
-  const [isMultiWalletMode, setIsMultiWalletMode] = useState(uniqueContractAddress.length > 0);
+  const [isMultiWalletMode, setIsMultiWalletMode] = useState(uniqueContractAddress?.length > 0);
   const currentContract = useSelector<StateType, MultisigContractInfoType>(currentMultisigContractSelector);
 
   const dispatch = useDispatch();
