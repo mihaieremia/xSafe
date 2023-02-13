@@ -34,14 +34,14 @@ const networkSchema = object({
 
 export type NetworkType = InferType<typeof networkSchema>;
 export const network: NetworkType = {
-  id: 'mainnet',
-  name: 'Mainnet',
-  egldLabel: 'EGLD',
-  walletAddress: 'https://wallet.multiversx.com',
-  apiAddress: 'https://api.multiversx.com',
-  gatewayAddress: 'https://gateway.multiversx.com',
-  explorerAddress: 'http://explorer.multiversx.com',
-  storageApi: 'https://extras-api.multiversx.com',
+  id: 'devnet',
+  name: 'Devnet',
+  egldLabel: 'xEGLD',
+  walletAddress: 'https://devnet-wallet.multiversx.com',
+  apiAddress: 'https://devnet-api.multiversx.com',
+  gatewayAddress: 'https://devnet-gateway.multiversx.com',
+  explorerAddress: 'http://devnet-explorer.multiversx.com',
+  storageApi: 'https://devnet-extras-api.multiversx.com',
 };
 
 networkSchema.validate(network, { strict: true }).catch(({ errors }) => {

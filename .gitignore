@@ -13,8 +13,8 @@
 /build
 
 # misc
-# /src/config.tsx
-# /src/config.ts
+/src/config.tsx
+/src/config.ts
 .DS_Store
 .env
 .npmrc

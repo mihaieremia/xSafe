@@ -10,7 +10,6 @@ export const gasPrice = 1000000000;
 export const version = 1;
 export const gasPriceModifier = '0.01';
 export const gasPerDataByte = '1500';
-export const chainID = 'D';
 export const gasLimit = 10_000_000;
 export const minGasLimit = 50_000;
 export const maxGasLimit = 1499999999;
@@ -21,6 +20,7 @@ export const walletConnectDeepLink =
 
 export const issueTokenContractAddress =
   'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+
 const networkSchema = object({
   id: string().defined().required(),
   egldLabel: string().defined().required(),
@@ -33,11 +33,12 @@ const networkSchema = object({
 }).required();
 
 export type NetworkType = InferType<typeof networkSchema>;
+
 export const network: NetworkType = {
   id: 'mainnet',
   name: 'Mainnet',
   egldLabel: 'EGLD',
-  walletAddress: 'https://wallet.multiversx.com',
+  walletAddress: 'https://wallet.multiversx.com/dapp/init',
   apiAddress: 'https://api.multiversx.com',
   gatewayAddress: 'https://gateway.multiversx.com',
   explorerAddress: 'http://explorer.multiversx.com',
@@ -48,6 +49,4 @@ networkSchema.validate(network, { strict: true }).catch(({ errors }) => {
   console.error(`Config invalid format for ${network.id}`, errors);
 });
 
-export const sampleAuthenticatedDomains = [
-  network.storageApi,
-];
+export const sampleAuthenticatedDomains = [network.storageApi];
