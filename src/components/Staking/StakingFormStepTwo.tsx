@@ -14,6 +14,7 @@ import { mutateSmartContractCall } from 'src/contracts/MultisigContract';
 import { currentMultisigTransactionIdSelector } from 'src/redux/selectors/multisigContractsSelectors';
 import { useTrackTransactionStatus } from '@multiversx/sdk-dapp/hooks';
 import { setProposeMultiselectSelectedOption } from 'src/redux/slices/modalsSlice';
+import BigNumber from 'bignumber.js';
 import ProviderPresentation from './ProviderPresentation';
 import { useMultistepFormContext } from '../Utils/MultistepForm';
 import { ChangeStepButton, FinalStepActionButton } from '../Theme/StyledComponents';
@@ -21,7 +22,7 @@ import { Text } from '../StyledComponents/StyledComponents';
 import AmountInputWithTokenSelection from '../Utils/AmountInputWithTokenSelection';
 
 interface IFormValues {
-  amount: string;
+  amount: number;
 }
 
 const StakingFormStepTwo = () => {
@@ -117,7 +118,8 @@ const StakingFormStepTwo = () => {
     try {
       const addressParam = new Address(selectedProvider?.provider);
 
-      const amountNumeric = Number(formik.values.amount);
+      const amountNumeric = new BigNumber(formik.values.amount.toString().replace(',', ''));
+
       if (Number.isNaN(amountNumeric)) {
         return;
       }
@@ -140,7 +142,8 @@ const StakingFormStepTwo = () => {
     setIsProcessingTransaction(true);
     const addressParam = new Address(selectedProvider?.provider);
 
-    const amountNumeric = Number(formik.values.amount);
+    const amountNumeric = new BigNumber(formik.values.amount.toString().replace(',', ''));
+
     if (Number.isNaN(amountNumeric)) {
       return;
     }
