@@ -10,7 +10,6 @@ import menuItems, { availableApps, MenuItem, preinstalledApps } from 'src/utils/
 import { uniqueContractAddress } from 'src/multisigConfig';
 import addressShorthand from 'src/helpers/addressShorthand';
 import { useOrganizationInfoContext } from 'src/pages/Organization/OrganizationInfoContextProvider';
-import pxToRem from 'src/components/Utils/pxToRem';
 import { useSelector } from 'react-redux';
 import { currentMultisigContractSelector } from 'src/redux/selectors/multisigContractsSelectors';
 import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account';
@@ -27,6 +26,7 @@ import { truncateInTheMiddle } from 'src/utils/addressUtils';
 import { XSafeLogo } from 'src/components/Utils/XSafeLogo';
 import { usePendingActions } from 'src/utils/usePendingActions';
 import { useTheme } from 'styled-components';
+import NetworkAnnouncer from 'src/components/Utils/NetworkAnnouncer';
 import {
   AnchorConnectedAccount,
   BottomMenuButton,
@@ -102,7 +102,7 @@ const MobileLayout = () => {
     setSelectedTab(newValue);
   };
 
-  const { isMultiWalletMode, isInReadOnlyMode } = useOrganizationInfoContext();
+  const { isMultiWalletMode } = useOrganizationInfoContext();
 
   const navigate = useNavigate();
   const handleRedirectToHome = () => {
@@ -148,8 +148,16 @@ const MobileLayout = () => {
           }}
         >
           <TopMobileMenu>
-            <TopMobileMenuLogoBox onClick={handleRedirectToHome}>
-              <XSafeLogo width={50} />
+            <TopMobileMenuLogoBox
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="flex-start"
+              onClick={handleRedirectToHome}
+            >
+              <Box mb="5px" display="flex">
+                <XSafeLogo width={50} height={17} />
+              </Box>
+              <NetworkAnnouncer network={network.name} />
             </TopMobileMenuLogoBox>
             <TopMobileMenuSafeBox sx={{
               px: 2,
@@ -170,17 +178,19 @@ const MobileLayout = () => {
                   justifyContent={'center'}
                   ml={minWidth380 ? '12px' : 0}
                 >
-                  <Typography
-                    component="span"
-                    fontWeight={600}
-                    lineHeight={1.1}
-                    display={'flex'}
-                    flexDirection={'row'}
-                    justifyContent={'space-between'}
-                    width={'100%'}
-                  >{currentContract?.name}
-                    {isInReadOnlyMode && <Typography fontSize={pxToRem(12)}>Read-only</Typography>}
-                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <Typography
+                      component="span"
+                      fontWeight={600}
+                      lineHeight={1.1}
+                      display={'flex'}
+                      flexDirection={'row'}
+                      justifyContent={'space-between'}
+                      width={'100%'}
+                      marginRight="10px"
+                    >{currentContract?.name}
+                    </Typography>
+                  </Box>
                   <Box display="flex">
                     <Text mr={1}>{safeAddress}</Text>
                     <Box className="d-flex">
@@ -207,12 +217,7 @@ const MobileLayout = () => {
                 <Box className="d-flex" ml={minWidth380 ? '12px' : 0}>
                   {openedSafeSelect === true && (
                   <Box>
-                    <IconButton
-                      size="small"
-                      onClick={() => setOpenedSafeSelect(false)}
-                    >
-                      <WifiProtectedSetupOutlinedIcon sx={{ color: '#FFF' }} />
-                    </IconButton>
+
                     <SafeOptions
                       closeSafe={() => setOpenedSafeSelect(false)}
                       ref={menuRef}
@@ -228,7 +233,21 @@ const MobileLayout = () => {
                       >
                         <WifiProtectedSetupOutlinedIcon sx={{ color: '#FFF' }} />
                       </IconButton>
-                    ) : <Text>No safe available</Text>}
+                    ) : (
+                      <Box display="flex" flexDirection="row-reverse">
+                        <Box
+                          sx={{
+                            border: '.5px solid #9c9ba5',
+                            borderRadius: '4px',
+                            py: 0.5,
+                            px: 1.25,
+                            marginRight: '14px',
+                          }}
+                        >
+                          <Text fontSize={11}>No safe available</Text>
+                        </Box>
+                      </Box>
+                    ) }
                   </Box>
                   )}
                 </Box>
@@ -246,15 +265,15 @@ const MobileLayout = () => {
       <MobileMenu>
         {menuItems.mobileBottomItems.map((el) => (
           <Link
-            to={el.link === 'marketplace' && installedAndPinnedApps.length > 0 ?
+            to={el.link === 'apps' && installedAndPinnedApps.length > 0 ?
               installedAndPinnedApps[0]?.link : el.link}
             className={
-                locationString === (el.link === 'marketplace' && installedAndPinnedApps.length > 0 ?
+                locationString === (el.link === 'apps' && installedAndPinnedApps.length > 0 ?
                   installedAndPinnedApps[0]?.link : el.link)
                   ? 'active link-decoration'
                   : 'link-decoration'
               }
-            key={el.link === 'marketplace' && installedAndPinnedApps.length > 0 ?
+            key={el.link === 'apps' && installedAndPinnedApps.length > 0 ?
               installedAndPinnedApps[0]?.link : el.link}
             style={{ width: '100%' }}
           >

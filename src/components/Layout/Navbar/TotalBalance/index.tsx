@@ -36,6 +36,9 @@ import { Text } from 'src/components/StyledComponents/StyledComponents';
 import {
   useGetLoginInfo, useTrackTransactionStatus,
 } from '@multiversx/sdk-dapp/hooks';
+import axios from 'axios';
+import { TransactionOnNetwork } from '@multiversx/sdk-network-providers/out';
+import { xSafeApiUrl } from 'src/helpers/constants';
 import { CenteredText } from '../navbar-style';
 import * as Styled from '../styled';
 import { useSendTokenButtonMinWidth } from './useSendTokenButtonMinWidth';
@@ -50,6 +53,9 @@ function TotalBalance() {
 
   const currentContract = useSelector<StateType, MultisigContractInfoType>(currentMultisigContractSelector);
   const minWidth600 = useMediaQuery('(min-width:600px)');
+
+  const queryClient = useQueryClient();
+  const { isLoggedIn } = useGetLoginInfo();
 
   const fetchAddressEsdts = useCallback(
     () => MultiversxApiProvider.getAddressTokens(currentContract?.address),
@@ -94,7 +100,7 @@ function TotalBalance() {
 
   const {
     data: egldBalanceDetails,
-    refetch: refetchEgldBalaneDetails,
+    refetch: refetchEgldBalanceDetails,
   } = useQuery(
     [
       QueryKeys.ADDRESS_EGLD_TOKENS,
@@ -107,15 +113,38 @@ function TotalBalance() {
     },
   );
 
-  const queryClient = useQueryClient();
-  const { isLoggedIn } = useGetLoginInfo();
+  const {
+    data: newTransactions,
+  } = useQuery(
+    [
+      'TRANSACTION_PROCESSOR',
+    ],
+    () => axios
+      .get<TransactionOnNetwork[]>(`${xSafeApiUrl}/transactions-processor/${currentContract?.address}`)
+      .then((r) => r?.data ?? []),
+    {
+      ...USE_QUERY_DEFAULT_CONFIG,
+      refetchInterval: 5000,
+      enabled: isLoggedIn,
+    },
+  );
+
+  useEffect(() => {
+    if (newTransactions && newTransactions.length > 0) {
+      console.log('Invalidation! We have new transactions!');
+      refetchAddressTokens();
+      refetchEgldBalanceDetails();
+      refetchNFTs();
+      queryClient.invalidateQueries(QueryKeys.NFT_COUNT);
+    }
+  }, [newTransactions, queryClient, refetchAddressTokens, refetchEgldBalanceDetails, refetchNFTs]);
 
   const currentMultisigTransactionId = useSelector(currentMultisigTransactionIdSelector);
   useTrackTransactionStatus({
     transactionId: currentMultisigTransactionId,
     onSuccess: () => {
       refetchAddressTokens();
-      refetchEgldBalaneDetails();
+      refetchEgldBalanceDetails();
     },
   });
 
@@ -123,14 +152,14 @@ function TotalBalance() {
     if (!currentContract?.address) return;
 
     refetchAddressTokens();
-    refetchEgldBalaneDetails();
+    refetchEgldBalanceDetails();
     refetchNFTs();
-  }, [currentContract?.address, queryClient, refetchAddressTokens, refetchEgldBalaneDetails, refetchNFTs]);
+  }, [currentContract?.address, queryClient, refetchAddressTokens, refetchEgldBalanceDetails, refetchNFTs]);
 
   useEffect(() => {
     if (!addressTokens) return;
-    refetchEgldBalaneDetails();
-  }, [addressTokens, refetchEgldBalaneDetails]);
+    refetchEgldBalanceDetails();
+  }, [addressTokens, refetchEgldBalanceDetails]);
 
   const egldPrice = useSelector(priceSelector);
 

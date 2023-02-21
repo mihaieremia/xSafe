@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address } from '@multiversx/sdk-core/out';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-
 import { GridActionsCellItem, GridRenderCellParams } from '@mui/x-data-grid';
 import { toSvg } from 'jdenticon';
 import { useSelector } from 'react-redux';
@@ -13,27 +12,23 @@ import { MultiversxApiProvider } from 'src/services/MultiversxApiNetworkProvider
 import { MainButtonNoShadow } from 'src/components/Theme/StyledComponents';
 import { truncateInTheMiddle } from 'src/utils/addressUtils';
 import { Text } from 'src/components/StyledComponents/StyledComponents';
-import { Button, useMediaQuery } from '@mui/material';
-import { isDarkThemeEnabledSelector } from 'src/redux/selectors/appConfigSelector';
+import { Box, useMediaQuery } from '@mui/material';
 import noRowsOverlay from 'src/components/Utils/noRowsOverlay';
-import { AccountInfo, AddressBook, Owner } from './types';
+import { AccountInfo, AddressBook, Bech32Address, MultisigMember } from './types';
 import { useOrganizationInfoContext } from './OrganizationInfoContextProvider';
 import * as Styled from './styled';
 import { useOwnerManipulationFunctions } from './utils';
-import MobileCardsForTableReplacementMemebers from './utils/MobileCardsForTableReplacementMemebers';
+import MultisigMemberMobileCards from './utils/MultisigMemberMobileCards';
 
 const OrganizationsOwnersTable = () => {
   const { isInReadOnlyMode } = useOrganizationInfoContext();
-  const [addresses, setAddresses] = useState<Array<Owner>>([]);
+  const [multisigMembers, setMultisigMembers] = useState<Array<MultisigMember>>([]);
   const getAddresses = useCallback(() => queryBoardMemberAddresses(), []);
   const maxWidth600 = useMediaQuery('(max-width:600px)');
-  const isDarkThemeEnabled = useSelector(isDarkThemeEnabledSelector);
 
-  // Set the address book
-  // Test the address book and herotag
   const addressBook = useSelector<RootState, AddressBook>(addressBookSelector);
 
-  const addAddressBookEntry = useCallback((accountInformation: AccountInfo): Owner => ({
+  const addAddressBookEntry = useCallback((accountInformation: AccountInfo): MultisigMember => ({
     address: accountInformation.address,
     ...(!!accountInformation.username && {
       herotag: accountInformation.username,
@@ -51,16 +46,21 @@ const OrganizationsOwnersTable = () => {
         Promise.all(
           ownerAddresses.map((address) => MultiversxApiProvider.getAccountData(new Address(address).bech32())),
         ).then((accountsInformation) => {
-          setAddresses(accountsInformation.map(addAddressBookEntry));
+          setMultisigMembers(accountsInformation.map(addAddressBookEntry));
         });
       });
-  }, [addAddressBookEntry]);
+  }, [addAddressBookEntry, getAddresses]);
 
   const {
-    onRemoveUser,
-    onEditOwner,
+    onRemoveMember,
+    onEditMember,
     onAddBoardMember,
   } = useOwnerManipulationFunctions();
+
+  const onEditMemberClick = useCallback((multisigMemberAddress: Bech32Address) => {
+    const multisigMember = multisigMembers.find((address) => address.address === multisigMemberAddress);
+    if (multisigMember) { onEditMember(multisigMember); }
+  }, [multisigMembers, onEditMember]);
 
   const columns = useMemo(
     () => [
@@ -70,11 +70,11 @@ const OrganizationsOwnersTable = () => {
         minWidth: 230,
         maxWidth: 290,
         type: 'object',
-        renderCell: (params: GridRenderCellParams<any>) => (
+        renderCell: (params: GridRenderCellParams<MultisigMember>) => (
           <div className="d-flex flex-column justify-content-center">
-            <strong className="mb-0">{params.value.name}</strong>
+            <strong className="mb-0">{params?.value?.name}</strong>
             <strong>
-              <Text>{params.value.herotag}</Text>
+              <Text>{params?.value?.herotag}</Text>
             </strong>
           </div>
         ),
@@ -84,86 +84,50 @@ const OrganizationsOwnersTable = () => {
         headerName: 'Address',
         width: 280,
         type: 'object',
-        /**
-         *
-         * @todo: add style component for avatar
-         */
-        renderCell: (params: any) => (
-          <div className="d-flex flex-row align-items-center">
+        renderCell: (params: GridRenderCellParams<MultisigMember>) => (
+          <Box display="flex" alignItems="center">
+            <Box
+              sx={{ borderRadius: '4px', overflow: 'hidden' }}
+              dangerouslySetInnerHTML={{
+                __html: toSvg(params.value?.address, 20, { padding: 0 }),
+              }}
+            />
             <strong>
-              {truncateInTheMiddle(params.value.address, 17)}
+              {truncateInTheMiddle(params.value?.address ?? '', 17)}
             </strong>
-          </div>
+          </Box>
         ),
       },
       {
         field: 'actions',
         type: 'actions',
         headerName: 'Action',
-        // eslint-disable-next-line react/no-unstable-nested-components
-        getActions: (params: any) => [
+        getActions: (params: GridRenderCellParams<MultisigMember>) => [
           <GridActionsCellItem
             key={params.id}
             icon={<DeleteIcon sx={{ opacity: '0.54' }} />}
             disabled={isInReadOnlyMode}
             label="Delete"
-            onClick={() => onRemoveUser(new Address(params.id))}
+            onClick={() => onRemoveMember(new Address(params.value?.address ?? ''))}
           />,
           <GridActionsCellItem
             key={params.id}
             icon={<EditIcon sx={{ opacity: '0.54' }} />}
             disabled={isInReadOnlyMode}
             label="Edit Owner"
-            onClick={() =>
-              onEditOwner(
-                addresses.find(
-                  (address) => address.address === params.id,
-                ) as Owner,
-              )}
+            onClick={() => onEditMemberClick(params.value?.address ?? '')}
           />,
         ],
       },
     ],
-    [isInReadOnlyMode, onRemoveUser, onEditOwner, addresses],
+    [isInReadOnlyMode, onRemoveMember, onEditMemberClick],
   );
 
-  const rows = addresses.map((owner: Owner) => ({
+  const rows = multisigMembers.map((owner: MultisigMember) => ({
     id: owner.address,
     owner: { name: owner.name, herotag: owner.herotag },
     address: { address: owner.address, identicon: toSvg(owner.address, 100) },
   }));
-
-  const getMobileActions = (params: any) => [
-    <Button
-      key={params.id}
-      startIcon={(
-        <DeleteIcon sx={{
-          // eslint-disable-next-line no-nested-ternary
-          color: isInReadOnlyMode ? isDarkThemeEnabled ? '#eeeeee8a' : '#08041D8a' : '#4c2ffc',
-        }}
-        />
-)}
-      disabled={isInReadOnlyMode}
-      onClick={() => onRemoveUser(new Address(params.id))}
-    />,
-    <Button
-      key={params.id}
-      startIcon={(
-        <EditIcon sx={{
-          // eslint-disable-next-line no-nested-ternary
-          color: isDarkThemeEnabled ? isInReadOnlyMode ? '#eeeeee8a' : '#4c2ffc' : '#08041D8a',
-        }}
-        />
-)}
-      disabled={isInReadOnlyMode}
-      onClick={() =>
-        onEditOwner(
-                addresses.find(
-                  (address) => address.address === params.id,
-                ) as Owner,
-        )}
-    />,
-  ];
 
   return (
     <>
@@ -177,15 +141,21 @@ const OrganizationsOwnersTable = () => {
         Add member
       </MainButtonNoShadow>
 
-      {maxWidth600 ? <MobileCardsForTableReplacementMemebers items={addresses} action={getMobileActions(addresses)} /> : (
-        <Styled.MainTable
-          autoHeight
-          rowHeight={65}
-          rows={rows}
-          columns={columns}
-          components={{ NoRowsOverlay: noRowsOverlay }}
-        />
-      )}
+      {maxWidth600
+        ? (
+          <MultisigMemberMobileCards
+            multisigMembers={multisigMembers}
+          />
+        )
+        : (
+          <Styled.MainTable
+            autoHeight
+            rowHeight={65}
+            rows={rows}
+            columns={columns}
+            components={{ NoRowsOverlay: noRowsOverlay }}
+          />
+        )}
     </>
   );
 };

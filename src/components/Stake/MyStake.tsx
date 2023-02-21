@@ -54,9 +54,7 @@ const MyStake = () => {
 
   const fetchDelegations = () =>
     axios
-      .get(
-        `https://api.xoxno.com/getDelegations/${currentContract?.address}`,
-      )
+      .get(`https://api.xoxno.com/getDelegations/${currentContract?.address}`)
       .then((r) => r.data);
 
   const {
