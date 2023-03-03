@@ -22,9 +22,7 @@ export default function useProviderIdentitiesAfterSelection({
 }: InputParams = {}) {
   const fetchProviders = useCallback(
     (): Promise<IProvider[]> =>
-      axios
-        .get(`${network.apiAddress}/providers`)
-        .then((res) => res.data),
+      axios.get(`${network.apiAddress}/providers`).then((res) => res.data),
     [],
   );
 
@@ -110,7 +108,9 @@ export default function useProviderIdentitiesAfterSelection({
           ?.filter((p) => !p.identity)
           .map((provider) => {
             const stakedAmount = Number(
-              TokenPayment.egldFromBigInteger(provider.locked).toRationalNumber(),
+              TokenPayment.egldFromBigInteger(
+                provider.locked,
+              ).toRationalNumber(),
             );
 
             const providerBeforeIdentityFetch = fetchedProviders?.find(
@@ -149,9 +149,10 @@ export default function useProviderIdentitiesAfterSelection({
                 apr: provider.apr ?? 0,
               },
               filledColumn: {
-                filledPercentage: providerBeforeIdentityFetch?.delegationCap !== '0'
-                  ? shortenedPercentage
-                  : ('∞' as any),
+                filledPercentage:
+                  providerBeforeIdentityFetch?.delegationCap !== '0'
+                    ? shortenedPercentage
+                    : ('∞' as any),
               },
             };
           }) ?? [];
@@ -186,7 +187,7 @@ export default function useProviderIdentitiesAfterSelection({
       ?.map((provider: IProvider) => provider.identity)
       .join(',');
     return axios
-      .get(`https://api.multiversx.com/identities?identities=${providerIds}`)
+      .get(`${network.apiAddress}/identities?identities=${providerIds}`)
       .then((res) => res.data);
   }, [fetchedProviders]);
 
@@ -198,12 +199,7 @@ export default function useProviderIdentitiesAfterSelection({
         addProvidersWithoutIdentity,
         shuffle,
       )(data),
-    [
-      filterBySearchParam,
-      buildColumns,
-      addProvidersWithoutIdentity,
-      shuffle,
-    ],
+    [filterBySearchParam, buildColumns, addProvidersWithoutIdentity, shuffle],
   );
   const {
     data: fetchedProviderIdentities,

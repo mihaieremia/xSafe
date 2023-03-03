@@ -89,7 +89,10 @@ export const App = () => (
                     apiTimeout,
                     walletConnectV2ProjectId,
                   }}
-                  environment={EnvironmentsEnum.mainnet}
+                  dappConfig={{
+                    shouldUseWebViewProvider: true,
+                  }}
+                  environment={EnvironmentsEnum.devnet}
                 >
                   <>
                     <SpotlightCommands />

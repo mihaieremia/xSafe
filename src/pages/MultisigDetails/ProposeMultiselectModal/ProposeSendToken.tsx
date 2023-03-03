@@ -50,7 +50,11 @@ const ProposeSendToken = ({
     () =>
       tokenTableRows?.map((token: TokenTableRowItem) => ({
         identifier: token.identifier,
-        balance: TokenPayment.egldFromBigInteger(token?.balanceDetails?.amount ?? '').toRationalNumber(),
+        balance: token.identifier === 'EGLD'
+          ? TokenPayment.egldFromBigInteger(token?.balanceDetails?.amount ?? '').toRationalNumber()
+          : TokenPayment.fungibleFromBigInteger(
+            token?.identifier ?? '', token?.balanceDetails?.amount ?? '', token?.balanceDetails?.decimals ?? 18,
+          ).toRationalNumber(),
       })),
     [tokenTableRows],
   );
@@ -60,6 +64,13 @@ const ProposeSendToken = ({
       (token: TokenTableRowItem) => token?.identifier === identifier,
     )?.balance as string,
     [availableTokensWithBalances, identifier],
+  );
+
+  const selectedTokenDetails = useMemo(
+    () => tokenTableRows?.find(
+      (token: TokenTableRowItem) => token?.identifier === identifier,
+    ),
+    [identifier, tokenTableRows],
   );
 
   const currentContract = useSelector(currentMultisigContractSelector);
@@ -170,12 +181,19 @@ const ProposeSendToken = ({
         return null;
       }
       const parsedAddress = new Address(address);
+      const amountToSend = Number(
+        TokenPayment
+          .fungibleFromAmount(identifier, amountParam, selectedTokenDetails?.value?.decimals ?? 18).toString(),
+      );
 
-      return new MultisigSendToken(parsedAddress, identifier, Number(nominate(amountParam)));
+      const a = Number(nominate(amountParam));
+      console.log({ a });
+      console.log({ amountToSend });
+      return new MultisigSendToken(parsedAddress, identifier, amountToSend);
     } catch (err) {
       return null;
     }
-  }, [address, identifier]);
+  }, [address, identifier, selectedTokenDetails]);
 
   const refreshProposal = useCallback(() => {
     setTimeout(() => {
